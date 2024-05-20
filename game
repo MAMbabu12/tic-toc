@@ -1,0 +1,112 @@
+import android.os.Bundle
+import android.view.View
+import android.widget.Button
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+
+class MainActivity : AppCompatActivity(), View.OnClickListener {
+
+    private val buttons = Array(3) { arrayOfNulls<Button>(3) }
+    private var player1Turn = true
+    private var roundCount = 0
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        for (i in 0..2) {
+            for (j in 0..2) {
+                val buttonId = "button_$i$j"
+                val resourceId = resources.getIdentifier(buttonId, "id", packageName)
+                buttons[i][j] = findViewById(resourceId)
+                buttons[i][j]?.setOnClickListener(this)
+            }
+        }
+
+        val resetButton: Button = findViewById(R.id.reset_button)
+        resetButton.setOnClickListener {
+            resetGame()
+        }
+    }
+
+    override fun onClick(v: View?) {
+        if (v is Button) {
+            if (v.text.toString().isNotEmpty()) {
+                return
+            }
+
+            if (player1Turn) {
+                v.text = "X"
+            } else {
+                v.text = "O"
+            }
+
+            roundCount++
+
+            if (checkForWin()) {
+                if (player1Turn) {
+                    player1Wins()
+                } else {
+                    player2Wins()
+                }
+            } else if (roundCount == 9) {
+                draw()
+            } else {
+                player1Turn = !player1Turn
+            }
+        }
+    }
+
+    private fun checkForWin(): Boolean {
+        val field = Array(3) { arrayOfNulls<String>(3) }
+
+        for (i in 0..2) {
+            for (j in 0..2) {
+                field[i][j] = buttons[i][j]?.text.toString()
+            }
+        }
+
+        for (i in 0..2) {
+            if (field[i][0] == field[i][1] && field[i][0] == field[i][2] && field[i][0].isNotEmpty()) {
+                return true
+            }
+            if (field[0][i] == field[1][i] && field[0][i] == field[2][i] && field[0][i].isNotEmpty()) {
+                return true
+            }
+        }
+
+        if (field[0][0] == field[1][1] && field[0][0] == field[2][2] && field[0][0].isNotEmpty()) {
+            return true
+        }
+        if (field[0][2] == field[1][1] && field[0][2] == field[2][0] && field[0][2].isNotEmpty()) {
+            return true
+        }
+
+        return false
+    }
+
+    private fun player1Wins() {
+        Toast.makeText(this, "Player 1 wins!", Toast.LENGTH_SHORT).show()
+        resetGame()
+    }
+
+    private fun player2Wins() {
+        Toast.makeText(this, "Player 2 wins!", Toast.LENGTH_SHORT).show()
+        resetGame()
+    }
+
+    private fun draw() {
+        Toast.makeText(this, "Draw!", Toast.LENGTH_SHORT).show()
+        resetGame()
+    }
+
+    private fun resetGame() {
+        for (i in 0..2) {
+            for (j in 0..2) {
+                buttons[i][j]?.text = ""
+            }
+        }
+        roundCount = 0
+        player1Turn = true
+    }
+}
